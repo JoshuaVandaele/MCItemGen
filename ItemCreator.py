@@ -11,6 +11,9 @@ def getUUID():
 	UUID.sort(reverse=True)
 	return str(UUID).replace("[","[I;")
 
+
+################################## DICTS ##################################
+
 tags = {
 	"EntityTag":{
 		"CustomName":[], #json text
@@ -174,6 +177,10 @@ cmd = {
 	}
 }
 
+
+################################## UI DICTS ##################################
+
+
 AttributeModifiers = {
 	1:"generic.armor",
 	2:"generic.armor_thoughness",
@@ -267,6 +274,20 @@ for blockList in blockentities.values():
 	subItemTypes["Block_Entities"] += blockList
 
 
+hidefl = {
+	0:"Done",
+	1:"Enchantments",
+	2:"Modifiers",
+	4:"Unbreakable",
+	8:"CanDestroy",
+	16:"CanPlace",
+	32:"Other info",
+	64:"Dyes",
+	127:"All"
+}
+
+################################## FUNCTIONS ##################################
+
 def remValFromDict(dict,val):
 	newDict = {}
 	for key,value in dict.items():
@@ -283,6 +304,9 @@ def remValsFromDict(dict,vals):
 def askYN(str):
 	print(str + " [Y/N]")
 	return input()[0:1].upper() == "Y"
+
+
+################################## ITEM SPECIFIC FUNCTIONS ##################################
 
 def Block_Entities():
 	print("Block entities aren't supported yet.")
@@ -322,6 +346,8 @@ def Potions():
 		addPot()
 	print("Potion color in format Red<<16 + Green<<8 + Blue")
 	cmd["nbt"]["CustomPotionColor"] = int(input())
+
+################################## GENERAL ITEM MODIFICATIONS ##################################
 
 def addAttrModif():
 	attrib = {
@@ -393,7 +419,7 @@ def makeJsonText():
 	line = swap(str(line),'"',"'")
 	return line
 
-
+################################## USER INTERACTION ##################################
 
 print("Welcome to Folfy_Blue's item creator!\n")
 print("Let's start with the name. What do you want this item to be named?")
@@ -411,6 +437,46 @@ print("\nTo attributes now!")
 while askYN("Do you want to add an attribute?"):
 	addAttrModif()
 
+print("How much damage do you want the item to have? (0 for none)")
+dmg = int(input())
+if dmg == 0:
+	cmd["nbt"].pop("Damage")
+else:
+	cmd["nbt"]["Damage"] = dmg
+
+
+if askYN("Do you want the item to be Unbreakable?"):
+	cmd["nbt"]["Unbreakable"] = True
+else:
+	cmd["nbt"].pop("Unbreakable")
+
+print("What do you want the repair cost of the item to be? (Default: 0)")
+cost = int(input())
+if cost == 0:
+	cmd["nbt"].pop("RepairCost")
+else:
+	cmd["nbt"]["RepairCost"] = cost
+
+print("Which flags do you wanna hide?")
+flags = 0
+for fl,flag in hidefl.items():
+	print(str(fl)+" - "+flag)
+
+while True:
+	i = int(input())
+	if i == 0:
+		break
+	elif i == 127:
+		flags = 127
+		break
+	flags+=i
+
+if flags == 0:
+	cmd["nbt"].pop("HideFlags")
+else:
+	cmd["nbt"]["HideFlags"] = flags
+	
+
 print("Type the namespaced ID of the item.")
 cmd["item"] = input().lower().replace("","")
 
@@ -419,10 +485,7 @@ for subType,itemDict in subItemTypes.items():
 		locals()[subType]()
 		break
 
-final = {
-	"wurst": ".give ",
-	"vanilla": "/give "
-}
+
 
 targetSelectors = ""
 for k,v in remValsFromDict(cmd["targetSelectors"],[False,{}]).items():
@@ -434,19 +497,17 @@ nbt = re.sub("REMOVENEXT.","",nbt)
 nbt = nbt.replace("\\","")
 nbt = nbt.replace("BACKSLASH","\\")
 
-
-final["vanilla"] = "/give " + cmd["target"]+"["+targetSelectors+"]"+" "+cmd["item"]+nbt
-final["wurst"] = ".give "+cmd["item"]+" 1 "+nbt
+final = {}
+final["Vanilla"] = "/give " + cmd["target"]+"["+targetSelectors+"]"+" "+cmd["item"]+nbt
+final["Wurst"] = ".give "+cmd["item"]+" 1 "+nbt
 
 print()
 print("GIVE COMMANDS")
-print("="*20)
-print("Vanilla:")
-print(final["vanilla"])
-print()
-print("="*20)
-print("Wurst:")
-print(final["wurst"])
+for ver,cmd in final.items():
+	print("="*20)
+	print(ver+":")
+	print(cmd)
+
 
 
 
@@ -466,5 +527,23 @@ Firework stars
 Maps
 Sus Stews
 Compass
+
+{"color":"#0cd2f9","text":"F"},
+{"color":"#18c8f7","text":"o"},
+{"color":"#24bef5","text":"l"},
+{"color":"#30b3f3","text":"f"},
+{"color":"#3ca9f1","text":"y"},
+{"color":"#489ff0","text":"_"},
+{"color":"#5495ee","text":"B"},
+{"color":"#608aec","text":"l"},
+{"color":"#6c80ea","text":"u"},
+{"color":"#7876e8","text":"e"},
+{"color":"#9061e5","text":" - "},
+{"color":"#a84ce1","text":"I "},
+{"color":"#c038de","text":"♥ "},
+{"color":"#d823da","text":"y"},
+{"color":"#e419d8","text":"o"},
+{"color":"#f00fd6","text":"u"},
+{"color":"#fd04d4","text":"!"}
 
 """
